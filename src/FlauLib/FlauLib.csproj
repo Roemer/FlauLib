@@ -51,6 +51,15 @@
     <Compile Include="Tools\AutoUpdateBase.cs" />
     <Compile Include="Tools\PortableConfiguration.cs" />
     <Compile Include="Tools\TextFormatter.cs" />
+    <Compile Include="WinForms\Controls\HintTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WinForms\Controls\SeparatorControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WinForms\Controls\SplitContainerEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="WinForms\MouseWheelMessageFilter.cs" />
   </ItemGroup>
   <ItemGroup>
