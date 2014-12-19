@@ -24,11 +24,15 @@ namespace FlauLib.MVVM
             return _canExecuteEvaluator == null || _canExecuteEvaluator.Invoke(parameter);
         }
 
+#if __MonoCS__
+        public event EventHandler CanExecuteChanged;
+#else
         public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
+#endif
 
         public void Execute(object parameter)
         {
