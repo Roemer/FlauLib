@@ -7,8 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlauLib", "FlauLib\FlauLib.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FEF563B7-E75D-47CF-8A6D-5FDA6DD91D06}"
 	ProjectSection(SolutionItems) = preProject
+		..\.travis.yml = ..\.travis.yml
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlauLib.Tests", "FlauLib.Tests\FlauLib.Tests.csproj", "{EA9D7B65-8A26-417C-80A4-B3D2B4055436}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +23,10 @@ Global
 		{7AFC35F1-E8E3-4399-A76E-6F99287E4562}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AFC35F1-E8E3-4399-A76E-6F99287E4562}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AFC35F1-E8E3-4399-A76E-6F99287E4562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA9D7B65-8A26-417C-80A4-B3D2B4055436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA9D7B65-8A26-417C-80A4-B3D2B4055436}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA9D7B65-8A26-417C-80A4-B3D2B4055436}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA9D7B65-8A26-417C-80A4-B3D2B4055436}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

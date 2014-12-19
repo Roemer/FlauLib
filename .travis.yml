@@ -1,10 +1,10 @@
 language: csharp
-solution: src/FlauLib.sln
+solution: ./src/FlauLib.sln
 
 install:
   - sudo apt-get install nunit-console
-  - nuget restore src/FlauLib.sln
+  - nuget restore ./src/FlauLib.sln
 
 script:
-  - xbuild src/FlauLib.sln
-#  - nunit-console ./src/FlauLib/Tests/bin/Debug/Tests.dll
+  - xbuild ./src/FlauLib.sln
+  - nunit-console ./src/FlauLib.Tests/bin/Debug/FlauLib.Tests.dll
