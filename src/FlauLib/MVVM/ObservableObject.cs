@@ -7,7 +7,8 @@ using System.Runtime.CompilerServices;
 namespace FlauLib.MVVM
 {
     /// <summary>
-    /// Base class to allow easy handling with INotifyPropertyChanged
+    /// Object which automatically handles INotifyPropertyChanged events
+    /// Last updated: 13.01.2015
     /// </summary>
     public abstract class ObservableObject : INotifyPropertyChanged
     {
@@ -62,8 +63,8 @@ namespace FlauLib.MVVM
 
         private bool IsEqual<T>(T field, T newValue)
         {
-            return EqualityComparer<T>.Default.Equals(field, newValue);
-            // Alternative: return Equals(field, newValue);
+            // Alternative: EqualityComparer<T>.Default.Equals(field, newValue);
+            return Equals(field, newValue);
         }
 
         private string GetNameFromExpression<T>(Expression<Func<T>> selectorExpression)

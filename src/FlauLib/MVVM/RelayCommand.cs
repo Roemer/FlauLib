@@ -4,6 +4,10 @@ using System.Windows.Input;
 
 namespace FlauLib.MVVM
 {
+    /// <summary>
+    /// Class to easy create ICommands
+    /// Last updated: 13.01.2015
+    /// </summary>
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _methodToExecute;
@@ -24,15 +28,11 @@ namespace FlauLib.MVVM
             return _canExecuteEvaluator == null || _canExecuteEvaluator.Invoke(parameter);
         }
 
-#if __MonoCS__
-        public event EventHandler CanExecuteChanged;
-#else
         public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
-#endif
 
         public void Execute(object parameter)
         {
