@@ -53,6 +53,7 @@
     <Compile Include="Tools\AutoUpdateBase.cs" />
     <Compile Include="Tools\NetworkTrafficAnalyzer.cs" />
     <Compile Include="Tools\PortableConfiguration.cs" />
+    <Compile Include="Tools\RandomGenerator.cs" />
     <Compile Include="Tools\TextFormatter.cs" />
     <Compile Include="Tools\ThreadsafeRandomGenerator.cs" />
     <Compile Include="Tools\ZipUtility.cs" />
