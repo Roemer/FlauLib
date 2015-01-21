@@ -1,97 +1,227 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 
 namespace FlauLib.Tools
 {
     /// <summary>
     /// Utility functions to handle zip/gzips without 3rd party dependencies
-    /// Last updated: 14.01.2015
+    /// Last updated: 15.01.2015
     /// </summary>
     public static class ZipUtility
     {
-        public static void ExtractZip(byte[] data, string destinationFolder)
+        # region Zip
+        /// <summary>
+        /// Compresses a folder to a zip file
+        /// </summary>
+        public static void ZipCompressFolderToFile(string sourceDirectoryName, string destinationArchiveFileName, CompressionLevel compressionLevel = CompressionLevel.Optimal, bool includeBaseDirectory = false)
         {
-            var des = new DirectoryInfo(destinationFolder);
-            des.Create();
-            using (var ms = new MemoryStream(data))
+            ZipFile.CreateFromDirectory(sourceDirectoryName, destinationArchiveFileName, compressionLevel, includeBaseDirectory);
+        }
+
+        /// <summary>
+        /// Compress a folder to a byte array
+        /// </summary>
+        public static byte[] ZipCompressFolderToBytes(string sourceDirectoryName, CompressionLevel compressionLevel = CompressionLevel.Optimal, bool includeBaseDirectory = false)
+        {
+            sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
+            using (var ms = new MemoryStream())
             {
-                using (var archive = new ZipArchive(ms, ZipArchiveMode.Read, false))
+                using (var zipArchive = new ZipArchive(ms, ZipArchiveMode.Create, false))
                 {
-                    foreach (var entry in archive.Entries)
+                    var archiveIsEmpty = true;
+                    var directoryInfo = new DirectoryInfo(sourceDirectoryName);
+                    var fullName = directoryInfo.FullName;
+                    if (includeBaseDirectory && directoryInfo.Parent != null)
                     {
-                        if (entry.Name == "")
+                        fullName = directoryInfo.Parent.FullName;
+                    }
+                    foreach (var current in directoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        archiveIsEmpty = false;
+                        var length = current.FullName.Length - fullName.Length;
+                        var entryName = current.FullName.Substring(fullName.Length, length);
+                        entryName = entryName.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        if (current is FileInfo)
                         {
-                            // It's a folder, create it (recursively)
-                            var folder = des;
-                            var pathParts = entry.FullName.Split(new[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var dir in pathParts)
-                            {
-                                folder = folder.CreateSubdirectory(dir);
-                            }
+                            // Process file
+                            var sourceFileName = current.FullName;
+                            zipArchive.CreateEntryFromFile(sourceFileName, entryName, compressionLevel);
                         }
                         else
                         {
-                            // It's a file, save it
-                            using (var fileData = entry.Open())
+                            // Process directory
+                            var directoryInfo2 = current as DirectoryInfo;
+                            if (directoryInfo2 != null && IsDirectoryEmpty(directoryInfo2.FullName))
                             {
-                                using (var fileStream = File.Create(Path.Combine(des.FullName, entry.FullName)))
-                                {
-                                    fileData.CopyTo(fileStream);
-                                }
+                                zipArchive.CreateEntry(entryName + Path.DirectorySeparatorChar, compressionLevel);
                             }
                         }
                     }
+                    if (includeBaseDirectory && archiveIsEmpty)
+                    {
+                        // Make sure the base directory exists if the zip is empty
+                        zipArchive.CreateEntry(directoryInfo.Name + Path.DirectorySeparatorChar);
+                    }
+                    return ms.ToArray();
                 }
             }
         }
 
-        public static byte[] CompressZip(string file)
+        /// <summary>
+        /// Compresses a file to a zip file
+        /// </summary>
+        public static void ZipCompressFileToFile(string sourceFileName, string destinationArchiveFileName, CompressionLevel compressionLevel = CompressionLevel.Optimal)
         {
-            var f = new FileInfo(file);
+            var f = new FileInfo(sourceFileName);
+            using (var zipArchive = ZipFile.Open(destinationArchiveFileName, ZipArchiveMode.Create))
+            {
+                zipArchive.CreateEntryFromFile(f.FullName, f.Name, compressionLevel);
+            }
+        }
+
+        /// <summary>
+        /// Compress a list of files to a byte array
+        /// </summary>
+        public static byte[] ZipCompressFilesToBytes(IEnumerable<string> sourceFileNames, CompressionLevel compressionLevel = CompressionLevel.Optimal, string baseDirectory = null)
+        {
             using (var ms = new MemoryStream())
             {
-                using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                using (var zipArchive = new ZipArchive(ms, ZipArchiveMode.Create, true))
                 {
-                    var fileContent = File.ReadAllBytes(f.FullName);
-                    var zipEntry = archive.CreateEntry(f.Name);
-                    using (var entryStream = zipEntry.Open())
+                    foreach (var file in sourceFileNames)
                     {
-                        entryStream.Write(fileContent, 0, fileContent.Length);
+                        var f = new FileInfo(file);
+                        var entryName = baseDirectory == null ? f.Name : Path.Combine(baseDirectory, f.Name);
+                        zipArchive.CreateEntryFromFile(f.FullName, entryName, compressionLevel);
                     }
                 }
                 return ms.ToArray();
             }
         }
 
-        public static string ExtractGZipToString(byte[] gzipData, Encoding encoding = null)
+        /// <summary>
+        /// Compress a file to a byte array
+        /// </summary>
+        public static byte[] ZipCompressFileToBytes(string sourceFileName, CompressionLevel compressionLevel = CompressionLevel.Optimal, string baseDirectory = null)
         {
-            var decodedData = ExtractGZip(gzipData);
-            return (encoding ?? Encoding.Default).GetString(decodedData);
+            return ZipCompressFilesToBytes(new[] { sourceFileName }, compressionLevel, baseDirectory);
         }
 
-        public static byte[] ExtractGZip(byte[] gzipData)
+        /// <summary>
+        /// Compress a byte array to a byte array
+        /// </summary>
+        public static byte[] ZipCompressBytesToBytes(byte[] sourceData, string entryName, CompressionLevel compressionLevel = CompressionLevel.Optimal)
         {
-            using (var stream = new GZipStream(new MemoryStream(gzipData), CompressionMode.Decompress))
+            using (var ms = new MemoryStream())
             {
-                const int size = 4096;
-                var buffer = new byte[size];
-                using (var memory = new MemoryStream())
+                using (var zipArchive = new ZipArchive(ms, ZipArchiveMode.Create, true))
                 {
-                    int count;
-                    do
+                    var zipEntry = zipArchive.CreateEntry(entryName, compressionLevel);
+                    using (var zipEntryStream = zipEntry.Open())
                     {
-                        count = stream.Read(buffer, 0, size);
-                        if (count > 0)
-                        {
-                            memory.Write(buffer, 0, count);
-                        }
+                        zipEntryStream.Write(sourceData, 0, sourceData.Length);
                     }
-                    while (count > 0);
-                    return memory.ToArray();
+                }
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Extract a file to a folder
+        /// </summary>
+        public static void ZipExtractToDirectory(string sourceArchiveFileName, string destinationDirectoryName)
+        {
+            ZipFile.ExtractToDirectory(sourceArchiveFileName, destinationDirectoryName);
+        }
+
+        /// <summary>
+        /// Extract a byte array to a folder
+        /// </summary>
+        public static void ZipExtractToDirectory(byte[] zipData, string destinationDirectoryName, bool overwrite = false)
+        {
+            using (var ms = new MemoryStream(zipData))
+            {
+                using (var zipArchive = new ZipArchive(ms, ZipArchiveMode.Read, false))
+                {
+                    if (!overwrite)
+                    {
+                        // Use the official helper
+                        zipArchive.ExtractToDirectory(destinationDirectoryName);
+                        return;
+                    }
+                    // Manually extract
+                    foreach (var zipArchiveEntry in zipArchive.Entries)
+                    {
+                        var fullPath = Path.Combine(destinationDirectoryName, zipArchiveEntry.FullName);
+                        if (zipArchiveEntry.Name == "")
+                        {
+                            // Looks like a directory
+                            Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                            continue;
+                        }
+                        // Make sure the directory to the file exists anyway...
+                        Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                        // Extract the file
+                        zipArchiveEntry.ExtractToFile(fullPath, true);
+                    }
                 }
             }
         }
+        #endregion
+
+        #region GZip
+
+        public static void GZipCompressFile(byte[] sourceData, string destinationArchiveFileName)
+        {
+            var compressedData = GZipCompress(sourceData);
+            File.WriteAllBytes(destinationArchiveFileName, compressedData);
+        }
+
+        public static byte[] GZipCompress(byte[] sourceData)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var gzipStream = new GZipStream(ms, CompressionMode.Compress, true))
+                {
+                    gzipStream.Write(sourceData, 0, sourceData.Length);
+                }
+                return ms.ToArray();
+            }
+        }
+
+        public static void GZipExtractToFile(byte[] gzipData, string destinationFileName)
+        {
+            var decodedData = GZipExtract(gzipData);
+            File.WriteAllBytes(destinationFileName, decodedData);
+        }
+
+        public static string GZipExtractToString(byte[] gzipData, Encoding encoding = null)
+        {
+            var decodedData = GZipExtract(gzipData);
+            return (encoding ?? Encoding.Default).GetString(decodedData);
+        }
+
+        public static byte[] GZipExtract(byte[] gzipData)
+        {
+            using (var gzipStream = new GZipStream(new MemoryStream(gzipData), CompressionMode.Decompress))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    gzipStream.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+        }
+        #endregion
+
+        #region Helpers
+        private static bool IsDirectoryEmpty(string path)
+        {
+            return !Directory.EnumerateFileSystemEntries(path).Any();
+        }
+        #endregion
     }
 }
