@@ -1,13 +1,16 @@
-﻿using fastJSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace FlauLib.Tools
+namespace FlauLib.Tools.PortableConfiguration
 {
-    public static class PortableConfiguration
+    /// <summary>
+    /// Easy portable configuration in json format
+    /// Last updated: 21.01.2015
+    /// </summary>
+    public class PortableConfiguration
     {
         private class ConfigurationItem
         {
@@ -15,11 +18,23 @@ namespace FlauLib.Tools
             public string Content { get; set; }
         }
 
-        private const string DefaultFilename = "settings";
-        private static readonly object LockObject = new Object();
-        private static readonly Regex SectionRegex = new Regex(@"\s*###CONFSECTION\s*(.*?)\s*###\s*(.*?)\s*###ENDCONFSECTION###\s*", RegexOptions.Compiled | RegexOptions.Singleline);
+        public interface ISerializer
+        {
+            T Deserialize<T>(string jsonString);
+            string Serialize(object settings);
+        }
 
-        public static void Save(string section, object settings, string fileName = DefaultFilename)
+        private const string DefaultFilename = "settings";
+        private readonly object _lockObject = new Object();
+        private static readonly Regex SectionRegex = new Regex(@"\s*###CONFSECTION\s*(.*?)\s*###\s*(.*?)\s*###ENDCONFSECTION###\s*", RegexOptions.Compiled | RegexOptions.Singleline);
+        private readonly ISerializer _serializer;
+
+        public PortableConfiguration(ISerializer serializer)
+        {
+            _serializer = serializer;
+        }
+
+        public void Save(string section, object settings, string fileName = DefaultFilename)
         {
             var items = LoadInternal(fileName);
             var foundItem = Find(section, items);
@@ -36,14 +51,14 @@ namespace FlauLib.Tools
             SafeInternal(items, fileName);
         }
 
-        public static T Load<T>(string section, string fileName = DefaultFilename, bool createIfNotExists = true) where T : new()
+        public T Load<T>(string section, string fileName = DefaultFilename, bool createIfNotExists = true) where T : new()
         {
             var items = LoadInternal(fileName);
             var foundItem = Find(section, items);
             if (foundItem != null)
             {
                 // Item found
-                return JSON.ToObject<T>(foundItem.Content);
+                return _serializer.Deserialize<T>(foundItem.Content);
             }
 
             var settings = new T();
@@ -56,33 +71,28 @@ namespace FlauLib.Tools
             return settings;
         }
 
-        private static ConfigurationItem CreateItem(string section, object settings)
+        private ConfigurationItem CreateItem(string section, object settings)
         {
             return new ConfigurationItem { Section = section, Content = ConvertToString(settings) };
         }
 
-        private static string ConvertToString(object settings)
+        private string ConvertToString(object settings)
         {
-            var parameters = new JSONParameters
-            {
-                UsingGlobalTypes = false,
-                UseExtensions = false
-            };
-            return JSON.Beautify(JSON.ToJSON(settings, parameters));
+            return _serializer.Serialize(settings);
         }
 
-        private static ConfigurationItem Find(string section, List<ConfigurationItem> items)
+        private ConfigurationItem Find(string section, List<ConfigurationItem> items)
         {
             var foundItem = items.Find(x => x.Section.Equals(section, StringComparison.CurrentCultureIgnoreCase));
             return foundItem;
         }
 
-        private static string CreateRealFileName(string fileName)
+        private string CreateRealFileName(string fileName)
         {
             return fileName + ".json";
         }
 
-        private static void SafeInternal(IEnumerable<ConfigurationItem> items, string fileName)
+        private void SafeInternal(IEnumerable<ConfigurationItem> items, string fileName)
         {
             var sb = new StringBuilder();
             foreach (var item in items)
@@ -95,7 +105,7 @@ namespace FlauLib.Tools
             var tempFile = fileName + ".temp";
             var realFile = CreateRealFileName(fileName);
             var bakFile = fileName + ".bak";
-            lock (LockObject)
+            lock (_lockObject)
             {
                 File.WriteAllText(tempFile, sb.ToString());
                 if (File.Exists(realFile))
@@ -113,11 +123,11 @@ namespace FlauLib.Tools
             }
         }
 
-        private static List<ConfigurationItem> LoadInternal(string fileName)
+        private List<ConfigurationItem> LoadInternal(string fileName)
         {
             var settingsList = new List<ConfigurationItem>();
             var realFile = CreateRealFileName(fileName);
-            lock (LockObject)
+            lock (_lockObject)
             {
                 if (File.Exists(realFile))
                 {

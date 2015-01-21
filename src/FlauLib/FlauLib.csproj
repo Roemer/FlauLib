@@ -34,6 +34,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\fastJSON.2.1.9.0\lib\net40\fastjson.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,7 +60,9 @@
     <Compile Include="Tools\CpuUsageReader.cs" />
     <Compile Include="Tools\FileTypeChecker.cs" />
     <Compile Include="Tools\NetworkTrafficAnalyzer.cs" />
-    <Compile Include="Tools\PortableConfiguration.cs" />
+    <Compile Include="Tools\PortableConfiguration\FastJsonSerializer.cs" />
+    <Compile Include="Tools\PortableConfiguration\JsonNetSerializer.cs" />
+    <Compile Include="Tools\PortableConfiguration\PortableConfiguration.cs" />
     <Compile Include="Tools\RandomGenerator.cs" />
     <Compile Include="Tools\TextFormatter.cs" />
     <Compile Include="Tools\ZipUtility.cs" />
