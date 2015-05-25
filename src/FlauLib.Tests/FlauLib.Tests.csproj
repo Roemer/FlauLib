@@ -42,8 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TextFormatterTestFixture.cs" />
+    <Compile Include="TextFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UndoRedo\UndoRedoTestObjects.cs" />
+    <Compile Include="UndoRedo\UndoRedoTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

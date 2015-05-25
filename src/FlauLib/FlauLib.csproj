@@ -65,6 +65,13 @@
     <Compile Include="Tools\PortableConfiguration\PortableConfiguration.cs" />
     <Compile Include="Tools\RandomGenerator.cs" />
     <Compile Include="Tools\TextFormatter.cs" />
+    <Compile Include="Tools\UndoRedo\Commands\Additions\ValueUndoCommand.cs" />
+    <Compile Include="Tools\UndoRedo\Commands\MultiCommand.cs" />
+    <Compile Include="Tools\UndoRedo\Commands\SingleCommand.cs" />
+    <Compile Include="Tools\UndoRedo\Commands\UndoCommand.cs" />
+    <Compile Include="Tools\UndoRedo\IUndoRedoCommand.cs" />
+    <Compile Include="Tools\UndoRedo\UndoRedoManager.cs" />
+    <Compile Include="Tools\UndoRedo\UndoRedoObject.cs" />
     <Compile Include="Tools\ZipUtility.cs" />
     <Compile Include="WinForms\Controls\HintTextBox.cs">
       <SubType>Component</SubType>

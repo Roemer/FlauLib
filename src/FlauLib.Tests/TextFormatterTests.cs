@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace FlauLib.Tests
 {
     [TestFixture]
-    public class TextFormatterTestFixture
+    public class TextFormatterTests
     {
         [Test]
         public void SizeSuffixTest()
