@@ -36,13 +36,25 @@ namespace TrafficMonitor
             }
         }
 
-        public string In
+        public string TotalIn
         {
             get { return GetProperty<string>(); }
             set { SetProperty(value); }
         }
 
-        public string Out
+        public string TotalOut
+        {
+            get { return GetProperty<string>(); }
+            set { SetProperty(value); }
+        }
+
+        public string CurrentIn
+        {
+            get { return GetProperty<string>(); }
+            set { SetProperty(value); }
+        }
+
+        public string CurrentOut
         {
             get { return GetProperty<string>(); }
             set { SetProperty(value); }
@@ -50,8 +62,10 @@ namespace TrafficMonitor
 
         private void t_Tick(object sender, EventArgs e)
         {
-            In = TextFormatter.SizeSuffix(analyzer.TotalTrafficIn);
-            Out = TextFormatter.SizeSuffix(analyzer.TotalTrafficOut);
+            TotalIn = TextFormatter.SizeSuffix(analyzer.TotalTrafficIn);
+            TotalOut = TextFormatter.SizeSuffix(analyzer.TotalTrafficOut);
+            CurrentIn = TextFormatter.SizeSuffix(analyzer.CurrentTrafficIn);
+            CurrentOut = TextFormatter.SizeSuffix(analyzer.CurrentTrafficOut);
         }
     }
 }
