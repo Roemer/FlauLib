@@ -12,8 +12,10 @@ namespace FlauLib.Tools
     }
 
     /// <summary>
-    /// Class to get available network adapters and get statistics out of them
-    /// Last updated: 21.01.2015
+    /// Class to get available network adapters and get statistics out of them.
+    /// The "current" value is the value since the start of the application or the last reset
+    /// and the "total" value is since the last start of the computer.
+    /// Last updated: 25.04.2016
     /// </summary>
     public class NetworkTrafficAnalyzer
     {
@@ -21,9 +23,30 @@ namespace FlauLib.Tools
 
         private readonly Dictionary<string, Tuple<long, long>> _startValues;
 
+        /// <summary>
+        /// The current adapter which returns the values
+        /// </summary>
         public string CurrentAdapter { get; set; }
 
         public long TotalTrafficIn
+        {
+            get
+            {
+                var currentValue = GetCounter(CurrentAdapter, NetworkTrafficAnalyzerCounterType.InLastSec).NextSample().RawValue;
+                return currentValue;
+            }
+        }
+
+        public long TotalTrafficOut
+        {
+            get
+            {
+                var currentValue = GetCounter(CurrentAdapter, NetworkTrafficAnalyzerCounterType.OutLastSec).NextSample().RawValue;
+                return currentValue;
+            }
+        }
+
+        public long CurrentTrafficIn
         {
             get
             {
@@ -33,7 +56,7 @@ namespace FlauLib.Tools
             }
         }
 
-        public long TotalTrafficOut
+        public long CurrentTrafficOut
         {
             get
             {
@@ -50,7 +73,7 @@ namespace FlauLib.Tools
             var allAdapters = GetNetworkAdapters();
             foreach (var adapter in allAdapters)
             {
-                SetValuesForAdapter(adapter);
+                InitializeValuesForAdapter(adapter);
             }
             CurrentAdapter = allAdapters.First();
         }
@@ -63,9 +86,12 @@ namespace FlauLib.Tools
             return _performanceCounterCategory.GetInstanceNames();
         }
 
+        /// <summary>
+        /// Resets the adapter to restart the current values
+        /// </summary>
         public void Reset()
         {
-            SetValuesForAdapter(CurrentAdapter);
+            InitializeValuesForAdapter(CurrentAdapter);
         }
 
         /// <summary>
@@ -77,7 +103,11 @@ namespace FlauLib.Tools
             return new PerformanceCounter("Network Interface", text, instanceName);
         }
 
-        private void SetValuesForAdapter(string adapter)
+        /// <summary>
+        /// Initializes the start values for the adapter to get the current values
+        /// </summary>
+        /// <param name="adapter"></param>
+        private void InitializeValuesForAdapter(string adapter)
         {
             var trafficIn = GetCounter(adapter, NetworkTrafficAnalyzerCounterType.InLastSec).NextSample().RawValue;
             var trafficOut = GetCounter(adapter, NetworkTrafficAnalyzerCounterType.OutLastSec).NextSample().RawValue;
