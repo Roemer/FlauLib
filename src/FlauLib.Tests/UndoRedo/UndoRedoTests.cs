@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace FlauLib.Tests.UndoRedo
 {
@@ -26,35 +27,35 @@ namespace FlauLib.Tests.UndoRedo
             testObject.Name = "Hello";
             testObject.Name = "World";
             testObject.Name = "!!!";
-            Assert.AreEqual("!!!", testObject.Name);
+            Assert.Equals("!!!", testObject.Name);
             testObject.Undo();
-            Assert.AreEqual("World", testObject.Name);
+            Assert.Equals("World", testObject.Name);
             testObject.Undo();
-            Assert.AreEqual("Hello", testObject.Name);
+            Assert.Equals("Hello", testObject.Name);
             testObject.Redo();
-            Assert.AreEqual("World", testObject.Name);
+            Assert.Equals("World", testObject.Name);
             testObject.Redo();
-            Assert.AreEqual("!!!", testObject.Name);
+            Assert.Equals("!!!", testObject.Name);
 
             // List tests
             testObject.AddNumber(1);
             testObject.AddNumber(2);
             testObject.AddNumber(3);
-            CollectionAssert.AreEqual(new[] { 1, 2, 3 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2, 3 }, testObject.Numbers);
             testObject.Undo();
-            CollectionAssert.AreEqual(new[] { 1, 2 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2 }, testObject.Numbers);
             testObject.Undo();
-            CollectionAssert.AreEqual(new[] { 1 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1 }, testObject.Numbers);
             testObject.Redo();
-            CollectionAssert.AreEqual(new[] { 1, 2 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2 }, testObject.Numbers);
             testObject.AddNumber(6);
-            CollectionAssert.AreEqual(new[] { 1, 2, 6 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2, 6 }, testObject.Numbers);
             testObject.RemoveNumber(6);
-            CollectionAssert.AreEqual(new[] { 1, 2 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2 }, testObject.Numbers);
             testObject.Undo();
-            CollectionAssert.AreEqual(new[] { 1, 2, 6 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2, 6 }, testObject.Numbers);
             testObject.Undo();
-            CollectionAssert.AreEqual(new[] { 1, 2 }, testObject.Numbers);
+            CollectionAssert.Equals(new[] { 1, 2 }, testObject.Numbers);
         }
     }
 }
